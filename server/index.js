@@ -9,14 +9,28 @@ app.use(cors());
 app.use(express.json());
 
 // Auto-seed if DB is empty
-const companyCount = db.prepare('SELECT COUNT(*) as c FROM companies').get().c;
-if (companyCount === 0) {
-  console.log('📦 Empty DB detected, running seed...');
+try {
+  const companyCount = db.prepare('SELECT COUNT(*) as c FROM companies').get().c;
+  if (companyCount === 0) {
+    console.log('📦 Empty DB detected, running seed...');
+    require('./seed');
+  }
+} catch (e) {
+  console.log('📦 Seed error, re-running...', e.message);
   require('./seed');
 }
 
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+app.get('/api/health', (req, res) => {
+  const count = db.prepare('SELECT COUNT(*) as c FROM companies').get().c;
+  res.json({ status: 'ok', time: new Date().toISOString(), companies: count });
+});
+
+// Force seed (dev only)
+app.post('/api/seed', (req, res) => {
+  require('./seed');
+  res.json({ ok: true, message: 'Seeded' });
+});
 
 // ─── Company ───
 app.get('/api/companies/:id', (req, res) => {

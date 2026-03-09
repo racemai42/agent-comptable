@@ -6,14 +6,20 @@ import { BILAN_SECTIONS, STATUS_LABELS } from '../../data/bilanSections';
 import BanquesSection from './sections/BanquesSection';
 import CCASection from './sections/CCASection';
 import VehiculePersoSection from './sections/VehiculePersoSection';
+import VehiculeProSection from './sections/VehiculeProSection';
 import EmpruntSection from './sections/EmpruntSection';
 import FournisseursSection from './sections/FournisseursSection';
 import ClientsSection from './sections/ClientsSection';
 import ImmobilisationsSection from './sections/ImmobilisationsSection';
+import ProjetEnCoursSection from './sections/ProjetEnCoursSection';
 import StockSection from './sections/StockSection';
 import CaisseSection from './sections/CaisseSection';
+import FilialesSection from './sections/FilialesSection';
 import LitigesSection from './sections/LitigesSection';
 import DirigeantTNSSection from './sections/DirigeantTNSSection';
+import CanauxVenteSection from './sections/CanauxVenteSection';
+import GarantieDecennaleSection from './sections/GarantieDecennaleSection';
+import ModificationsStatutairesSection from './sections/ModificationsStatutairesSection';
 import AGOASection from './sections/AGOASection';
 import GenericSection from './sections/GenericSection';
 
@@ -21,14 +27,20 @@ const SECTION_COMPONENTS = {
   banques: BanquesSection,
   cca: CCASection,
   vehicule_perso: VehiculePersoSection,
+  vehicule_pro: VehiculeProSection,
   emprunt: EmpruntSection,
   fournisseurs: FournisseursSection,
   clients: ClientsSection,
   immobilisations: ImmobilisationsSection,
+  projet_en_cours: ProjetEnCoursSection,
   stock: StockSection,
   caisse: CaisseSection,
+  filiales: FilialesSection,
   litiges: LitigesSection,
   dirigeant_tns: DirigeantTNSSection,
+  canaux_vente: CanauxVenteSection,
+  garantie_decennale: GarantieDecennaleSection,
+  modifications_statutaires: ModificationsStatutairesSection,
   agoa: AGOASection,
 };
 

@@ -1,134 +1,112 @@
 import { useState, useEffect } from 'react';
-import { Info } from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
 import { api } from '../../../api/mock';
-
-const EXERCICE_OPTIONS = [
-  { value: 'n', label: 'Exercice N' },
-  { value: 'n1', label: 'Exercice N+1' },
-  { value: 'both', label: 'Les deux' },
-];
 
 export default function FournisseursSection({ bilan, onClose }) {
   const [lignes, setLignes] = useState([]);
 
   useEffect(() => {
     api.getFournisseursCutoff().then(data =>
-      setLignes(data.map(l => ({ ...l })))
+      setLignes(data.map(l => ({ ...l, _concerne_n: l.concerne_n ? 'oui' : '', _concerne_n1: l.concerne_n1 ? 'oui' : '', _pct: l.pct_realise || '' })))
     );
   }, []);
 
-  const fmt = (n) => Number(n).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
-  const fmtDate = (d) => new Date(d).toLocaleDateString('fr-FR');
+  const debutStr = bilan?.exercice?.debut
+    ? new Date(bilan.exercice.debut).toLocaleDateString('fr-FR')
+    : '';
+  const finStr = bilan?.exercice?.fin
+    ? new Date(bilan.exercice.fin).toLocaleDateString('fr-FR')
+    : '';
+  const finDate = bilan?.exercice?.fin ? new Date(bilan.exercice.fin) : null;
+  const nextStart = finDate ? new Date(finDate.getTime() + 86400000) : null;
+  const nextEnd = finDate
+    ? new Date(new Date(finDate).setFullYear(finDate.getFullYear() + 1))
+    : null;
+  const nextStartStr = nextStart?.toLocaleDateString('fr-FR') || '';
+  const nextEndStr = nextEnd?.toLocaleDateString('fr-FR') || '';
 
-  const handleChange = (id, field, value) => {
+  const update = (id, field, value) =>
     setLignes(prev => prev.map(l => l.id === id ? { ...l, [field]: value } : l));
-  };
-
-  const totalCCA = lignes
-    .filter(l => l.concerne_n1)
-    .reduce((s, l) => s + l.montant * (1 - (l.pct_realise || 100) / 100), 0);
-
-  const totalFNP = lignes
-    .filter(l => l.concerne_n && !l.date_facture_recue)
-    .reduce((s, l) => s + l.montant * ((l.pct_realise || 100) / 100), 0);
 
   return (
     <div>
-      <div className="info-box">
-        <Info size={18} />
-        <span>
-          Ces dépenses concernent quels exercices ? Nous affichons par défaut toutes les transactions
-          de plus de <strong>500 €</strong> des <strong>3 derniers mois</strong> avant la clôture.
-          Les réponses permettent de calculer les <em>Charges Constatées d'Avance</em> (CCA) et
-          les <em>Factures Non Parvenues</em> (FNP).
-        </span>
-      </div>
+      <div className="card">
+        <p style={{ fontWeight: 600, marginBottom: 4 }}>Ces dépenses concernent quels exercices ?</p>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-md)' }}>
+          Indiquez pour chacune de ces transactions si elles ont été réalisées au cours de l'exercice ou si elles
+          correspondent à une livraison de la période précédente ou suivante. Nous affichons ci-dessous les
+          transactions de plus de 500€ effectuées au cours des 3 derniers mois de votre exercice. Vous pouvez
+          afficher des transactions plus anciennes en cliquant sur "voir plus".
+        </p>
 
-      <div className="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Fournisseur</th>
-              <th>Date</th>
-              <th>Montant TTC</th>
-              <th>Exercice concerné</th>
-              <th>% réalisé sur N</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lignes.length === 0 && (
+        <div className="table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <td colSpan={6} style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
-                  Aucune transaction concernée
-                </td>
+                <th>Nom</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Concerne la période du {debutStr} au {finStr} ?</th>
+                <th>Concerne la période du {nextStartStr} au {nextEndStr} ?</th>
+                <th>% réalisé sur la période</th>
+                <th></th>
               </tr>
-            )}
-            {lignes.map(l => (
-              <tr key={l.id}>
-                <td style={{ fontWeight: 500 }}>{l.nom}</td>
-                <td>{fmtDate(l.date)}</td>
-                <td>{fmt(l.montant)}</td>
-                <td>
-                  <select
-                    className="form-select"
-                    style={{ width: 140 }}
-                    value={l.concerne_n1 ? (l.concerne_n ? 'both' : 'n1') : 'n'}
-                    onChange={ev => {
-                      const v = ev.target.value;
-                      handleChange(l.id, 'concerne_n', v === 'n' || v === 'both');
-                      handleChange(l.id, 'concerne_n1', v === 'n1' || v === 'both');
-                    }}
-                  >
-                    {EXERCICE_OPTIONS.map(o => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  {(l.concerne_n && l.concerne_n1) ? (
-                    <input
-                      type="number"
-                      className="form-input"
-                      style={{ width: 80 }}
-                      min={0}
-                      max={100}
-                      value={l.pct_realise}
-                      onChange={ev => handleChange(l.id, 'pct_realise', parseInt(ev.target.value) || 0)}
-                    />
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)' }}>—</span>
-                  )}
-                </td>
-                <td>
-                  <span className={`status-badge status-${l.statut === 'validé' ? 'complete' : 'pending'}`}>
-                    {l.statut === 'validé' ? 'Validé' : 'En attente'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {(totalCCA > 0 || totalFNP > 0) && (
-        <div className="card" style={{ background: 'var(--bg)' }}>
-          <p className="form-label" style={{ marginBottom: 'var(--space-sm)' }}>Impact comptable estimé</p>
-          {totalCCA > 0 && (
-            <div style={{ fontSize: '0.85rem', marginBottom: 4 }}>
-              <strong>CCA (Charges Constatées d'Avance) :</strong> {fmt(totalCCA)}
-            </div>
-          )}
-          {totalFNP > 0 && (
-            <div style={{ fontSize: '0.85rem' }}>
-              <strong>FNP (Factures Non Parvenues) :</strong> {fmt(totalFNP)}
-            </div>
-          )}
+            </thead>
+            <tbody>
+              {lignes.map(l => (
+                <tr key={l.id}>
+                  <td style={{ fontWeight: 500 }}>{l.nom}</td>
+                  <td>{new Date(l.date).toLocaleDateString('fr-FR')}</td>
+                  <td>
+                    {l.montant.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td>
+                    <select
+                      className="form-select"
+                      style={{ padding: '4px 8px', fontSize: '0.85rem' }}
+                      value={l._concerne_n || ''}
+                      onChange={e => update(l.id, '_concerne_n', e.target.value)}
+                    >
+                      <option value="">Sélection</option>
+                      <option value="oui">oui</option>
+                      <option value="non">non</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      className="form-select"
+                      style={{ padding: '4px 8px', fontSize: '0.85rem' }}
+                      value={l._concerne_n1 || ''}
+                      onChange={e => update(l.id, '_concerne_n1', e.target.value)}
+                    >
+                      <option value="">Sélection</option>
+                      <option value="oui">oui</option>
+                      <option value="non">non</option>
+                    </select>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <input
+                        className="form-input"
+                        placeholder="Avancement"
+                        value={l._pct || ''}
+                        onChange={e => update(l.id, '_pct', e.target.value)}
+                        style={{ width: 90, fontSize: '0.85rem' }}
+                      />
+                      <span style={{ color: 'var(--primary)', fontWeight: 600 }}>%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <MoreVertical size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       <div className="drawer-footer">
-        <button className="btn btn-outline" onClick={onClose}>Annuler</button>
         <button className="btn btn-primary" onClick={onClose}>Valider</button>
       </div>
     </div>

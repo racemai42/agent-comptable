@@ -1,81 +1,68 @@
 import { useState } from 'react';
-import { Info } from 'lucide-react';
 
 export default function DirigeantTNSSection({ bilan, onClose }) {
   const saved = bilan?.responses?.dirigeant_tns ?? {};
-  const [acre, setAcre] = useState(saved.acre ?? null);
-  const [remuneration, setRemuneration] = useState(saved.remuneration ?? null);
+  const [acre, setAcre] = useState(saved.acre ?? true);
+  // remuneration: false = "Non" (a reçu rémunération, confirme que la question est fausse)
+  const [confirmeNoRemun, setConfirmeNoRemun] = useState(saved.remuneration === false ? false : null);
   const [precisions, setPrecisions] = useState('');
 
   return (
     <div>
-      <div className="info-box">
-        <Info size={18} />
-        <span>
-          En tant que dirigeant TNS (travailleur non salarié), vos cotisations sociales sont calculées
-          sur la base de votre rémunération. Ces informations permettent de valider le traitement
-          comptable de votre statut sur l'exercice.
-        </span>
-      </div>
-
-      {/* Q1 — ACRE */}
       <div className="card">
-        <p className="form-label">Bénéficiez-vous de l'ACRE ?</p>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-sm)' }}>
-          L'ACRE (Aide à la Création ou Reprise d'Entreprise) permet une exonération partielle de
-          cotisations sociales pendant la première année d'activité.
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Bénéficiez-vous de l'ACRE (aide à la création d'entreprise) ?
         </p>
         <div className="radio-group">
           <label className="radio-label">
-            <input type="radio" name="acre" checked={acre === true} onChange={() => setAcre(true)} />
+            <input type="radio" name="acre" checked={acre} onChange={() => setAcre(true)} />
             Oui
           </label>
           <label className="radio-label">
-            <input type="radio" name="acre" checked={acre === false} onChange={() => setAcre(false)} />
+            <input type="radio" name="acre" checked={!acre} onChange={() => setAcre(false)} />
             Non
           </label>
         </div>
-        {acre && (
-          <div className="info-box" style={{ marginTop: 'var(--space-md)' }}>
-            <Info size={16} />
-            <span>
-              L'ACRE sera prise en compte dans le calcul de vos cotisations TNS pour l'exercice.
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Q2 — Rémunération */}
       <div className="card">
-        <p className="form-label">
-          Confirmez-vous que le gérant n'a pas perçu de rémunération durant l'exercice ?
+        <p style={{ marginBottom: 'var(--space-md)', fontSize: '0.875rem' }}>
+          Vous n'avez eu aucunes dépenses catégorisées en "Rémunération du dirigeant" au cours de l'exercice
+          précédent.<br />
+          Confirmez-vous que le(s) gérant(s) de votre société n'a pas perçu de rémunération ?
         </p>
-        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+        <div className="radio-group" style={{ marginBottom: confirmeNoRemun === false ? 'var(--space-md)' : 0 }}>
           <label className="radio-label">
-            <input type="radio" name="remuneration" checked={remuneration === false} onChange={() => setRemuneration(false)} />
-            Oui, aucune rémunération perçue
+            <input
+              type="radio"
+              name="confirme_no_remun"
+              checked={confirmeNoRemun === true}
+              onChange={() => setConfirmeNoRemun(true)}
+            />
+            Oui
           </label>
           <label className="radio-label">
-            <input type="radio" name="remuneration" checked={remuneration === true} onChange={() => setRemuneration(true)} />
-            Non, une rémunération a été perçue
+            <input
+              type="radio"
+              name="confirme_no_remun"
+              checked={confirmeNoRemun === false}
+              onChange={() => setConfirmeNoRemun(false)}
+            />
+            Non
           </label>
         </div>
-        {remuneration === true && (
-          <div className="form-group" style={{ marginTop: 'var(--space-md)' }}>
-            <label className="form-label">Précisez</label>
-            <textarea
-              className="form-textarea"
-              value={precisions}
-              onChange={e => setPrecisions(e.target.value)}
-              placeholder="Indiquez le montant et la nature de la rémunération perçue..."
-            />
-          </div>
+        {confirmeNoRemun === false && (
+          <textarea
+            className="form-textarea"
+            placeholder="Précisez"
+            value={precisions}
+            onChange={e => setPrecisions(e.target.value)}
+          />
         )}
       </div>
 
       <div className="drawer-footer">
-        <button className="btn btn-outline" onClick={onClose}>Annuler</button>
-        <button className="btn btn-primary" onClick={onClose} disabled={acre === null || remuneration === null}>Valider</button>
+        <button className="btn btn-primary" onClick={onClose}>Valider</button>
       </div>
     </div>
   );

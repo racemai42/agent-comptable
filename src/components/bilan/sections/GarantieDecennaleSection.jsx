@@ -71,8 +71,7 @@ export default function GarantieDecennaleSection({ bilan, onClose }) {
       </div>
 
       <div className="drawer-footer">
-        <button className="btn btn-outline" onClick={onClose}>Annuler</button>
-        <button className="btn btn-primary" onClick={onClose} disabled={sinistres === null}>Valider</button>
+        <button className="btn btn-primary" onClick={onClose}>Valider</button>
       </div>
     </div>
   );

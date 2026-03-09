@@ -1,100 +1,141 @@
 import { useState, useEffect } from 'react';
-import { Info, Upload } from 'lucide-react';
+import { Info, Paperclip, MoreVertical, FileText } from 'lucide-react';
 import { api } from '../../../api/mock';
 
-const REGIMES_FISCAUX = ['IS', 'IR', 'SAS', 'SARL', 'Autre'];
+const REGIMES_FISCAUX = ['Régime fiscal', 'IS', 'IR', 'BNC', 'BIC', 'Autre'];
 
 export default function FilialesSection({ bilan, onClose }) {
   const [filiales, setFiliales] = useState([]);
-  const [conventionTresorerie, setConventionTresorerie] = useState(bilan?.responses?.filiales?.convention_tresorerie ?? null);
+  const [conventionTresorerie, setConventionTresorerie] = useState(
+    bilan?.responses?.filiales?.convention_tresorerie ?? true
+  );
 
   useEffect(() => {
-    api.getFiliales().then(data => setFiliales(data.map(f => ({ ...f, convention: false, taux_interet: '' }))));
+    api.getFiliales().then(data =>
+      setFiliales(data.map(f => ({ ...f, _pct: f.pct_detention || '', _siret: f.siren || '', _regime: f.regime_fiscal || '', _convention: 'Oui / non', _taux: '' })))
+    );
   }, []);
 
-  const handleChange = (id, field, value) => {
+  const update = (id, field, value) =>
     setFiliales(prev => prev.map(f => f.id === id ? { ...f, [field]: value } : f));
-  };
 
   return (
     <div>
-      <div className="info-box">
-        <Info size={18} />
-        <span>
-          Une filiale est une société dans laquelle votre entreprise détient <strong>au moins 5%</strong> du
-          capital ou exerce un contrôle. Les relations financières avec les filiales doivent être documentées.
-        </span>
-      </div>
-
-      {/* Q1 — Liste filiales */}
       <div className="card">
-        <p className="form-label" style={{ marginBottom: 'var(--space-md)' }}>Liste des filiales</p>
-        {filiales.length === 0 && (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Aucune filiale enregistrée</p>
-        )}
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Pour ces filiales indiquez quel est le pourcentage de détention par votre société :
+        </p>
+
+        <div className="info-box">
+          <Info size={18} />
+          <div>
+            <strong>Information</strong>
+            <div>
+              Vous avez {filiales.length} filiale(s) enregistrée(s) sur LegalPlace Pro.<br />
+              Pour être considéré comme une filiale, votre société doit détenir au moins 5% du capital ou exercer un
+              contrôle sur celle-ci.
+            </div>
+          </div>
+        </div>
+
         <div className="table-wrapper">
-          {filiales.length > 0 && (
-            <table>
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>% de détention</th>
-                  <th>SIRET</th>
-                  <th>Régime fiscal</th>
-                  <th>Liasse fiscale</th>
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>% de détention</th>
+                <th>Siret</th>
+                <th>Régime fiscal</th>
+                <th>Liasse fiscale</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filiales.map(f => (
+                <tr key={f.id}>
+                  <td style={{ fontWeight: 500 }}>{f.nom}</td>
+                  <td>
+                    <input
+                      className="form-input"
+                      placeholder="%"
+                      value={f._pct}
+                      onChange={e => update(f.id, '_pct', e.target.value)}
+                      style={{ width: 70 }}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      className="form-input"
+                      placeholder="Siret"
+                      value={f._siret}
+                      onChange={e => update(f.id, '_siret', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <select
+                      className="form-select"
+                      value={f._regime}
+                      onChange={e => update(f.id, '_regime', e.target.value)}
+                    >
+                      {REGIMES_FISCAUX.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    {f._regime && f._regime !== 'Régime fiscal' ? (
+                      <FileText size={18} color="var(--primary)" style={{ cursor: 'pointer' }} />
+                    ) : (
+                      <Paperclip size={18} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+                    )}
+                  </td>
+                  <td>
+                    <MoreVertical size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filiales.map(f => (
-                  <tr key={f.id}>
-                    <td style={{ fontWeight: 500 }}>{f.nom}</td>
-                    <td>{f.pct_detention}%</td>
-                    <td><code style={{ fontSize: '0.8rem' }}>{f.siren}</code></td>
-                    <td>
-                      <select
-                        className="form-select"
-                        style={{ width: 100 }}
-                        value={f.regime_fiscal}
-                        onChange={e => handleChange(f.id, 'regime_fiscal', e.target.value)}
-                      >
-                        {REGIMES_FISCAUX.map(r => <option key={r} value={r}>{r}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <button className="btn btn-outline btn-sm">
-                        <Upload size={13} /> Déposer
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Q2 — Convention de trésorerie */}
+      <div className="drawer-footer" style={{ marginBottom: 'var(--space-lg)' }}>
+        <button className="btn btn-primary" onClick={onClose}>Valider</button>
+      </div>
+
+      {/* Convention de trésorerie */}
       <div className="card">
-        <p className="form-label">Avez-vous une convention de trésorerie avec vos filiales ?</p>
-        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Avez-vous signé une convention de trésorerie entre votre société et votre / vos filiale(s) ?
+        </p>
+        <div className="radio-group" style={{ marginBottom: conventionTresorerie ? 'var(--space-md)' : 0 }}>
           <label className="radio-label">
-            <input type="radio" name="convention" checked={conventionTresorerie === true} onChange={() => setConventionTresorerie(true)} />
+            <input
+              type="radio"
+              name="convention_tresorerie"
+              checked={conventionTresorerie}
+              onChange={() => setConventionTresorerie(true)}
+            />
             Oui
           </label>
           <label className="radio-label">
-            <input type="radio" name="convention" checked={conventionTresorerie === false} onChange={() => setConventionTresorerie(false)} />
+            <input
+              type="radio"
+              name="convention_tresorerie"
+              checked={!conventionTresorerie}
+              onChange={() => setConventionTresorerie(false)}
+            />
             Non
           </label>
         </div>
 
-        {conventionTresorerie && filiales.length > 0 && (
-          <div className="table-wrapper" style={{ marginTop: 'var(--space-md)' }}>
+        {conventionTresorerie && (
+          <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Filiale</th>
+                  <th>Nom</th>
                   <th>Convention</th>
-                  <th>Taux d'intérêt (%)</th>
+                  <th>Taux d'intérêt</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -102,27 +143,30 @@ export default function FilialesSection({ bilan, onClose }) {
                   <tr key={f.id}>
                     <td>{f.nom}</td>
                     <td>
-                      <label className="radio-label">
-                        <input
-                          type="checkbox"
-                          checked={f.convention}
-                          onChange={e => handleChange(f.id, 'convention', e.target.checked)}
-                        />
-                        Oui
-                      </label>
+                      <select
+                        className="form-select"
+                        value={f._convention}
+                        onChange={e => update(f.id, '_convention', e.target.value)}
+                      >
+                        <option value="Oui / non">Oui / non</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
                     </td>
                     <td>
-                      {f.convention && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <input
-                          type="number"
                           className="form-input"
-                          style={{ width: 100 }}
-                          value={f.taux_interet}
-                          onChange={e => handleChange(f.id, 'taux_interet', e.target.value)}
-                          placeholder="Ex: 3.5"
-                          step="0.1"
+                          placeholder="%"
+                          value={f._taux}
+                          onChange={e => update(f.id, '_taux', e.target.value)}
+                          style={{ width: 80 }}
                         />
-                      )}
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>%</span>
+                      </div>
+                    </td>
+                    <td>
+                      <MoreVertical size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
                     </td>
                   </tr>
                 ))}
@@ -130,11 +174,6 @@ export default function FilialesSection({ bilan, onClose }) {
             </table>
           </div>
         )}
-      </div>
-
-      <div className="drawer-footer">
-        <button className="btn btn-outline" onClick={onClose}>Annuler</button>
-        <button className="btn btn-primary" onClick={onClose} disabled={conventionTresorerie === null}>Valider</button>
       </div>
     </div>
   );

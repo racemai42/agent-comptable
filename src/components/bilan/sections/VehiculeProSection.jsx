@@ -1,162 +1,222 @@
 import { useState, useEffect } from 'react';
-import { Info, Truck } from 'lucide-react';
+import { Info, Car, Truck, Tag, Paperclip } from 'lucide-react';
 import { api } from '../../../api/mock';
-
-const AVANTAGE_METHODES = [
-  { value: 'forfait', label: 'Forfait 8% du coût d\'acquisition' },
-  { value: 'reel', label: 'Dépenses réellement engagées' },
-];
 
 export default function VehiculeProSection({ bilan, onClose }) {
   const [vehicules, setVehicules] = useState([]);
   const [infoConfirmee, setInfoConfirmee] = useState(bilan?.responses?.vehicule_pro?.info_confirmee ?? null);
-  const [assures, setAssures] = useState(bilan?.responses?.vehicule_pro?.assures ?? null);
-  const [usagePerso, setUsagePerso] = useState(bilan?.responses?.vehicule_pro?.usage_perso ?? null);
-  const [methodeAEN, setMethodeAEN] = useState(bilan?.responses?.vehicule_pro?.methode_aen ?? 'forfait');
+  const [assures, setAssures] = useState(bilan?.responses?.vehicule_pro?.assures ?? true);
+  const [usagePerso, setUsagePerso] = useState(bilan?.responses?.vehicule_pro?.usage_perso ?? true);
+  const [methode, setMethode] = useState('forfait');
   const [tvaCompris, setTvaCompris] = useState(false);
+  const [deductibilite, setDeductibilite] = useState({});
 
   useEffect(() => {
-    api.getVehiculesPro().then(data => setVehicules(data.map(v => ({ ...v }))));
+    api.getVehiculesPro().then(data => {
+      setVehicules(data);
+      const init = {};
+      data.forEach(v => { init[v.id] = ''; });
+      setDeductibilite(init);
+    });
   }, []);
 
   return (
     <div>
       <div className="info-box">
         <Info size={18} />
-        <span>
-          Ces informations sont nécessaires pour calculer la <strong>TVS (Taxe sur les Véhicules de Société)</strong> et
-          la durée d'immobilisation de chaque véhicule professionnel.
-        </span>
-      </div>
-
-      {/* Liste véhicules */}
-      <div className="card">
-        <p className="form-label" style={{ marginBottom: 'var(--space-md)' }}>Véhicules professionnels</p>
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Immatriculation</th>
-                <th>Véhicule</th>
-                <th>Informations</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicules.length === 0 && (
-                <tr><td colSpan={4} style={{ color: 'var(--text-muted)', textAlign: 'center' }}>Aucun véhicule pro</td></tr>
-              )}
-              {vehicules.map(v => (
-                <tr key={v.id}>
-                  <td>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Truck size={14} />
-                      {v.type}
-                    </span>
-                  </td>
-                  <td><code style={{ fontSize: '0.8rem' }}>{v.immatriculation}</code></td>
-                  <td>{v.nom}</td>
-                  <td>
-                    <span className={`status-badge status-${v.complet ? 'complete' : 'error'}`}>
-                      {v.complet ? 'Complet' : 'Incomplet'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          <strong>Information</strong>
+          <div>
+            Ces informations sont nécessaires pour calculer le montant de la TVS (Taxe Véhicules de Société) et
+            la durée d'immobilisation de votre véhicule.
+          </div>
         </div>
       </div>
 
-      {/* Q1 — Confirmation infos */}
+      {/* Vehicle list */}
+      <div style={{ marginBottom: 'var(--space-md)' }}>
+        {vehicules.map(v => (
+          <div
+            key={v.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: 'var(--space-md) 0',
+              borderBottom: '1px solid var(--border)',
+              gap: 'var(--space-md)',
+            }}
+          >
+            <div style={{ color: 'var(--text-secondary)' }}>
+              {v.type === 'Camionette' ? <Truck size={20} /> : <Car size={20} />}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{v.nom}</span>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    padding: '2px 8px',
+                    borderRadius: 12,
+                    background: v.complet ? '#dcfce7' : '#fff7ed',
+                    color: v.complet ? 'var(--success)' : '#c2410c',
+                  }}
+                >
+                  {v.complet ? 'Informations complètes' : 'Informations incomplètes'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-md)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Car size={12} /> {v.type}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Tag size={12} /> {v.immatriculation}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+              <button className="btn btn-outline btn-sm">Détails</button>
+              <button className="btn btn-outline btn-sm">Modifier</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Q1 */}
       <div className="card">
-        <p className="form-label">Confirmez-vous les informations des véhicules ?</p>
-        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Pouvez-vous nous confirmer les informations à propos de ce véhicule ?
+        </p>
+        <div className="radio-group">
           <label className="radio-label">
             <input type="radio" name="info_confirmee" checked={infoConfirmee === true} onChange={() => setInfoConfirmee(true)} />
             Oui
           </label>
           <label className="radio-label">
             <input type="radio" name="info_confirmee" checked={infoConfirmee === false} onChange={() => setInfoConfirmee(false)} />
-            Non, il y a des erreurs
-          </label>
-        </div>
-      </div>
-
-      {/* Q2 — Assurance */}
-      <div className="card">
-        <p className="form-label">Tous vos véhicules professionnels sont-ils assurés ?</p>
-        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
-          <label className="radio-label">
-            <input type="radio" name="assures" checked={assures === true} onChange={() => setAssures(true)} />
-            Oui
-          </label>
-          <label className="radio-label">
-            <input type="radio" name="assures" checked={assures === false} onChange={() => setAssures(false)} />
             Non
           </label>
         </div>
       </div>
 
-      {/* Q3 — Usage personnel */}
+      {/* Q2 */}
       <div className="card">
-        <p className="form-label">Utilisez-vous parfois ce(s) véhicule(s) pour des déplacements personnels ?</p>
-        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Confirmez-vous que tous vos véhicules professionnels sont assurés ?
+        </p>
+        <div className="radio-group">
           <label className="radio-label">
-            <input type="radio" name="usage_perso" checked={usagePerso === true} onChange={() => setUsagePerso(true)} />
+            <input type="radio" name="assures" checked={assures} onChange={() => setAssures(true)} />
             Oui
           </label>
           <label className="radio-label">
-            <input type="radio" name="usage_perso" checked={usagePerso === false} onChange={() => setUsagePerso(false)} />
+            <input type="radio" name="assures" checked={!assures} onChange={() => setAssures(false)} />
             Non
           </label>
         </div>
+      </div>
+
+      {/* Q3 */}
+      <div className="card">
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Utilisez-vous parfois ce ou ces véhicule(s) pour des déplacements personnels ?
+        </p>
+        <div className="radio-group" style={{ marginBottom: usagePerso ? 'var(--space-md)' : 0 }}>
+          <label className="radio-label">
+            <input type="radio" name="usage_perso" checked={usagePerso} onChange={() => setUsagePerso(true)} />
+            Oui
+          </label>
+          <label className="radio-label">
+            <input type="radio" name="usage_perso" checked={!usagePerso} onChange={() => setUsagePerso(false)} />
+            Non
+          </label>
+        </div>
+
         {usagePerso && (
-          <div style={{ marginTop: 'var(--space-md)' }}>
-            <p className="form-label" style={{ marginBottom: 'var(--space-sm)' }}>
-              Méthode de calcul de l'avantage en nature
-            </p>
-            {AVANTAGE_METHODES.map(m => (
-              <label key={m.value} className="radio-label" style={{ marginBottom: 'var(--space-sm)', display: 'block' }}>
-                <input
-                  type="radio"
-                  name="methode_aen"
-                  value={m.value}
-                  checked={methodeAEN === m.value}
-                  onChange={() => setMethodeAEN(m.value)}
-                />
-                {m.label}
+          <>
+            <div className="info-box">
+              <Info size={18} />
+              <div>
+                <strong>Information</strong>
+                <div>
+                  L'utilisation d'un véhicule de société pour des déplacements personnels est possible à condition de
+                  payer des charges sociales sur cet "avantage en nature".<br /><br />
+                  Il existe 2 méthode pour calculer le montant de cet avantage en nature :<br />
+                  - Le "forfait" : 9% du prix d'achat (si véhicule acheté) ou 30% du montant de la location annuelle
+                  (si leasing/LOA)<br />
+                  - Les "dépenses réellement engagées" : vous évaluez les dépenses équivalentes à vos déplacements
+                  personnels selon le barème de l'urssaf lien ici
+                </div>
+              </div>
+            </div>
+            <p style={{ fontWeight: 600, marginBottom: 'var(--space-sm)' }}>Quel méthode choisissez-vous ?</p>
+            <div className="radio-group">
+              <label className="radio-label">
+                <input type="radio" name="methode" checked={methode === 'forfait'} onChange={() => setMethode('forfait')} />
+                Le forfait
               </label>
-            ))}
-          </div>
+              <label className="radio-label">
+                <input type="radio" name="methode" checked={methode === 'reel'} onChange={() => setMethode('reel')} />
+                Les "dépenses réellement engagées"
+              </label>
+            </div>
+          </>
         )}
       </div>
 
-      {/* Info TVA */}
-      <div className="alert-box warning">
-        <Info size={18} />
-        <div>
-          <strong>Rappel TVA véhicules</strong>
-          <p style={{ marginTop: 4, fontSize: '0.85rem' }}>
-            Il est interdit de déduire la TVA sur l'achat, l'entretien ou le leasing d'un véhicule de société
-            destiné au transport de personnes.
-          </p>
-          <label className="checkbox-label" style={{ marginTop: 'var(--space-sm)' }}>
-            <input type="checkbox" checked={tvaCompris} onChange={e => setTvaCompris(e.target.checked)} />
-            J'ai compris
-          </label>
+      {/* TVA info + checkbox */}
+      <div className="card">
+        <div className="info-box">
+          <Info size={18} />
+          <div>
+            <strong>Information</strong>
+            <div>
+              Il est interdit de déduire la TVA des dépenses liées à votre véhicule de société (achat, entretien,
+              leasing). Cependant, vous avez :
+              <br />- {vehicules.length} transactions catégorisées "Achat de véhicule" avec une TVA non nulle
+              <br />- 1 transactions catégorisées "Entretien" avec une TVA non nulle
+              <br />- 0 transactions catégorisées "Leasing" avec une TVA non nulle
+              <br />La TVA sur ces transactions sera remise à 0 par votre comptable.
+            </div>
+          </div>
         </div>
+        <label className="checkbox-label">
+          <input type="checkbox" checked={tvaCompris} onChange={e => setTvaCompris(e.target.checked)} />
+          J'ai compris et j'accepte la modification
+        </label>
+      </div>
+
+      {/* Deductibilite fiscale */}
+      <div className="card">
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)', fontSize: '0.875rem' }}>
+          Pouvez-vous s'il vous plaît nous indiquer le montant maximum de déductibilité fiscale annuelle de votre
+          véhicule, et nous transmettre l'attestation de déductibilité fiscale ?
+        </p>
+        {vehicules.map(v => (
+          <div
+            key={v.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-md)',
+              marginBottom: 'var(--space-sm)',
+            }}
+          >
+            <div style={{ width: 140, fontSize: '0.875rem', fontWeight: 500 }}>{v.nom}</div>
+            <input
+              className="form-input"
+              placeholder="Déductibilité fiscale annuelle"
+              value={deductibilite[v.id] || ''}
+              onChange={e => setDeductibilite(prev => ({ ...prev, [v.id]: e.target.value }))}
+              style={{ flex: 1 }}
+            />
+            <Paperclip size={16} color="var(--text-muted)" style={{ cursor: 'pointer', flexShrink: 0 }} />
+          </div>
+        ))}
       </div>
 
       <div className="drawer-footer">
-        <button className="btn btn-outline" onClick={onClose}>Annuler</button>
-        <button
-          className="btn btn-primary"
-          onClick={onClose}
-          disabled={infoConfirmee === null || assures === null || usagePerso === null || !tvaCompris}
-        >
-          Valider
-        </button>
+        <button className="btn btn-primary" onClick={onClose}>Valider</button>
       </div>
     </div>
   );

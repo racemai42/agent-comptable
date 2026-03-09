@@ -1,88 +1,48 @@
 import { useState, useEffect } from 'react';
-import { Info, Car } from 'lucide-react';
 import { api } from '../../../api/mock';
 
 export default function VehiculePersoSection({ bilan, onClose }) {
   const [vehicules, setVehicules] = useState([]);
-  const [ikCorrect, setIkCorrect] = useState(bilan?.responses?.vehicule_perso?.ik_correct ?? null);
+  const [ikCorrect, setIkCorrect] = useState(bilan?.responses?.vehicule_perso?.ik_correct ?? true);
 
-  useEffect(() => {
-    api.getVehiculesPerso().then(setVehicules);
-  }, []);
-
-  const fmt = (n) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  useEffect(() => { api.getVehiculesPerso().then(setVehicules); }, []);
 
   return (
     <div>
-      <div className="info-box">
-        <Info size={18} />
-        <span>
-          Les indemnités kilométriques (IK) sont calculées d'après le barème fiscal selon le nombre de km parcourus
-          avec votre véhicule personnel à des fins professionnelles.
-        </span>
-      </div>
-
       <div className="card">
-        <p className="form-label" style={{ marginBottom: 'var(--space-md)' }}>
-          Véhicules personnels utilisés à des fins professionnelles
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          Vos véhicules personnels et les kilomètres parcourus cette année
         </p>
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Véhicule</th>
-                <th>Immatriculation</th>
-                <th>Km parcourus</th>
-                <th>Montant IK</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicules.length === 0 && (
-                <tr><td colSpan={4} style={{ color: 'var(--text-muted)', textAlign: 'center' }}>Aucun véhicule</td></tr>
-              )}
-              {vehicules.map(v => (
-                <tr key={v.id}>
-                  <td>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Car size={14} />
-                      {v.nom}
-                    </span>
-                  </td>
-                  <td><code style={{ fontSize: '0.8rem' }}>{v.immatriculation}</code></td>
-                  <td>{v.km.toLocaleString('fr-FR')} km</td>
-                  <td style={{ fontWeight: 600 }}>{fmt(v.montant_ik)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
+          {vehicules.map(v => (
+            <div
+              key={v.id}
+              style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-md)' }}
+            >
+              <div style={{ fontSize: '0.875rem', marginBottom: 'var(--space-sm)' }}>{v.nom}</div>
+              <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                {v.km.toLocaleString('fr-FR')} km pour {v.montant_ik.toLocaleString('fr-FR')}€
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className="card">
-        <p className="form-label">
-          Confirmez-vous que le(s) montant(s) des indemnités kilométriques sont corrects ?
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-sm)' }}>
+          Confirmez-vous que le ou les montant(s) des indemnités kilométriques indiqué(s) sont corrects ?
         </p>
-        <div className="radio-group" style={{ marginTop: 'var(--space-sm)' }}>
+        <div className="radio-group">
           <label className="radio-label">
-            <input type="radio" name="ik_correct" checked={ikCorrect === true} onChange={() => setIkCorrect(true)} />
-            Oui, je confirme
+            <input type="radio" name="ik_correct" checked={ikCorrect} onChange={() => setIkCorrect(true)} />
+            Oui
           </label>
           <label className="radio-label">
-            <input type="radio" name="ik_correct" checked={ikCorrect === false} onChange={() => setIkCorrect(false)} />
-            Non, les montants sont incorrects
+            <input type="radio" name="ik_correct" checked={!ikCorrect} onChange={() => setIkCorrect(false)} />
+            Non
           </label>
         </div>
-        {ikCorrect === false && (
-          <div className="alert-box warning" style={{ marginTop: 'var(--space-md)' }}>
-            <Info size={18} />
-            <span>Veuillez contacter votre comptable pour corriger les montants des IK.</span>
-          </div>
-        )}
       </div>
 
       <div className="drawer-footer">
-        <button className="btn btn-outline" onClick={onClose}>Annuler</button>
-        <button className="btn btn-primary" onClick={onClose} disabled={ikCorrect === null}>Valider</button>
+        <button className="btn btn-primary" onClick={onClose}>Valider</button>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ function Placeholder({ title }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/agent-comptable">
       <div className="app-layout">
         <Sidebar />
         <main className="main-content">

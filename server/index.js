@@ -8,6 +8,13 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Auto-seed if DB is empty
+const companyCount = db.prepare('SELECT COUNT(*) as c FROM companies').get().c;
+if (companyCount === 0) {
+  console.log('📦 Empty DB detected, running seed...');
+  require('./seed');
+}
+
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 

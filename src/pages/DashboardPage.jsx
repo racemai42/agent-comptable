@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/client';
+import { api } from '../api/mock';
 import { TrendingUp, TrendingDown, Wallet, AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {

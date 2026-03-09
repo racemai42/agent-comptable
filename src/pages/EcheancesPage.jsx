@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/client';
+import { api } from '../api/mock';
 import BilanChecklist from '../components/bilan/BilanChecklist';
 
 export default function EcheancesPage() {

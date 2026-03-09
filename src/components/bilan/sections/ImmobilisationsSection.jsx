@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, AlertTriangle } from 'lucide-react';
-import { api } from '../../../api/client';
+import { api } from '../../../api/mock';
 
 const CATEGORIES = [
   'Matériel informatique',

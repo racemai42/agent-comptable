@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Info, Plus, Trash2 } from 'lucide-react';
-import { api } from '../../../api/client';
+import { Info, Plus, Trash2, Upload, AlertTriangle } from 'lucide-react';
+import { api } from '../../../api/mock';
 
 const EXERCICE_OPTIONS = [
   { value: 'n', label: 'Exercice N' },
@@ -95,6 +95,16 @@ export default function ClientsSection({ bilan, onClose }) {
   const [hasTravaux, setHasTravaux] = useState(bilan?.responses?.clients?.has_travaux ?? null);
   const [travaux, setTravaux] = useState([]);
   const [avoirs, setAvoirs] = useState([]);
+  const [hasAvoirs, setHasAvoirs] = useState(null);
+  const [clientsDouteux, setClientsDouteux] = useState([]);
+  const [hasRetenuesGarantie, setHasRetenuesGarantie] = useState(null);
+  const [retenuesGarantie, setRetenuesGarantie] = useState([]);
+  const [attestationsTVA, setAttestationsTVA] = useState([]);
+  const [logicielFacturation, setLogicielFacturation] = useState('');
+  const [confirmCA, setConfirmCA] = useState(null);
+  const [ecartCA, setEcartCA] = useState('');
+  const [confirmUE, setConfirmUE] = useState(null);
+  const [ecartUE, setEcartUE] = useState('');
 
   useEffect(() => {
     api.getClientsCutoff().then(data => setLignesN(data.map(l => ({ ...l }))));
@@ -302,10 +312,20 @@ export default function ClientsSection({ bilan, onClose }) {
 
       {/* Q5 — Avoirs */}
       <div className="card">
-        <p className="form-label" style={{ marginBottom: 'var(--space-md)' }}>
-          5. Avoirs émis lors de l'exercice suivant à déduire
+        <p className="form-label">
+          5. Avez-vous émis après votre date de clôture des avoirs pour des marchandises ou prestations de services livrées avant cette date ?
         </p>
-        {avoirs.length > 0 && (
+        <div className="radio-group" style={{ margin: 'var(--space-sm) 0 var(--space-md)' }}>
+          <label className="radio-label">
+            <input type="radio" name="has_avoirs" checked={hasAvoirs === true} onChange={() => setHasAvoirs(true)} />
+            Oui
+          </label>
+          <label className="radio-label">
+            <input type="radio" name="has_avoirs" checked={hasAvoirs === false} onChange={() => setHasAvoirs(false)} />
+            Non
+          </label>
+        </div>
+        {hasAvoirs && avoirs.length > 0 && (
           <div className="table-wrapper">
             <table>
               <thead>
@@ -342,9 +362,250 @@ export default function ClientsSection({ bilan, onClose }) {
             </table>
           </div>
         )}
-        <button className="btn btn-outline btn-sm" style={{ marginTop: 'var(--space-sm)' }} onClick={addAvoir}>
-          <Plus size={13} /> Ajouter un avoir
+        {hasAvoirs && (
+          <button className="btn btn-outline btn-sm" style={{ marginTop: 'var(--space-sm)' }} onClick={addAvoir}>
+            <Plus size={13} /> Ajouter un avoir
+          </button>
+        )}
+      </div>
+
+      {/* Q6 — Clients douteux */}
+      <div className="card">
+        <p className="form-label">
+          6. Pensez-vous que certaines factures pourraient ne jamais être payées par vos clients ?
+        </p>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-sm)' }}>
+          Concerne les factures à encaisser de plus de 5 000 € renseignées ci-dessus.
+        </p>
+        {clientsDouteux.length > 0 && (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Montant TTC (€)</th>
+                  <th>TVA (%)</th>
+                  <th>Risque impayé</th>
+                  <th>% risque estimé</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {clientsDouteux.map(c => (
+                  <tr key={c.id}>
+                    <td><input className="form-input" value={c.nom} onChange={e => setClientsDouteux(prev => prev.map(x => x.id === c.id ? { ...x, nom: e.target.value } : x))} placeholder="Nom" /></td>
+                    <td><input type="number" className="form-input" value={c.montant} onChange={e => setClientsDouteux(prev => prev.map(x => x.id === c.id ? { ...x, montant: e.target.value } : x))} /></td>
+                    <td>
+                      <select className="form-select" value={c.taux_tva} onChange={e => setClientsDouteux(prev => prev.map(x => x.id === c.id ? { ...x, taux_tva: e.target.value } : x))}>
+                        <option value={20}>20%</option><option value={10}>10%</option><option value={5.5}>5,5%</option><option value={0}>0%</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select className="form-select" value={c.risque ? 'oui' : 'non'} onChange={e => setClientsDouteux(prev => prev.map(x => x.id === c.id ? { ...x, risque: e.target.value === 'oui' } : x))}>
+                        <option value="oui">Oui</option><option value="non">Non</option>
+                      </select>
+                    </td>
+                    <td>
+                      {c.risque ? (
+                        <input type="number" className="form-input" style={{ width: 80 }} min={0} max={100} value={c.pct_risque}
+                          onChange={e => setClientsDouteux(prev => prev.map(x => x.id === c.id ? { ...x, pct_risque: e.target.value } : x))} />
+                      ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                    </td>
+                    <td>
+                      <button className="btn btn-outline btn-sm" onClick={() => setClientsDouteux(prev => prev.filter(x => x.id !== c.id))}>
+                        <Trash2 size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <button className="btn btn-outline btn-sm" style={{ marginTop: 'var(--space-sm)' }} onClick={() => setClientsDouteux(prev => [...prev, { id: nextId++, nom: '', montant: '', taux_tva: 20, risque: false, pct_risque: 0 }])}>
+          <Plus size={13} /> Ajouter un client douteux
         </button>
+      </div>
+
+      {/* Q7 — Retenues de garantie (BTP) */}
+      <div className="card">
+        <p className="form-label">
+          7. Avez-vous facturé des retenues de garantie au cours de l'exercice ?
+        </p>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-sm)' }}>
+          (Secteur BTP uniquement)
+        </p>
+        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+          <label className="radio-label">
+            <input type="radio" name="retenues_garantie" checked={hasRetenuesGarantie === true} onChange={() => setHasRetenuesGarantie(true)} />
+            Oui
+          </label>
+          <label className="radio-label">
+            <input type="radio" name="retenues_garantie" checked={hasRetenuesGarantie === false} onChange={() => setHasRetenuesGarantie(false)} />
+            Non
+          </label>
+        </div>
+        {hasRetenuesGarantie && (
+          <>
+            {retenuesGarantie.length > 0 && (
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date facture</th>
+                      <th>Montant HT retenue de garantie (€)</th>
+                      <th>Facture</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {retenuesGarantie.map(r => (
+                      <tr key={r.id}>
+                        <td><input type="date" className="form-input" value={r.date} onChange={e => setRetenuesGarantie(prev => prev.map(x => x.id === r.id ? { ...x, date: e.target.value } : x))} /></td>
+                        <td><input type="number" className="form-input" value={r.montant} onChange={e => setRetenuesGarantie(prev => prev.map(x => x.id === r.id ? { ...x, montant: e.target.value } : x))} placeholder="Montant" /></td>
+                        <td>
+                          <div className="upload-zone" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
+                            <Upload size={14} /> Joindre
+                          </div>
+                        </td>
+                        <td>
+                          <button className="btn btn-outline btn-sm" onClick={() => setRetenuesGarantie(prev => prev.filter(x => x.id !== r.id))}>
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <button className="btn btn-outline btn-sm" style={{ marginTop: 'var(--space-sm)' }} onClick={() => setRetenuesGarantie(prev => [...prev, { id: nextId++, date: '', montant: '' }])}>
+              <Plus size={13} /> Ajouter
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Q8 — Attestations TVA réduite (BTP) */}
+      <div className="card">
+        <p className="form-label" style={{ marginBottom: 'var(--space-xs)' }}>
+          8. Les montants suivants correspondent à des encaissements de plus de 10 000 € avec un taux de TVA réduit.
+        </p>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-md)' }}>
+          L'application d'un taux réduit suppose que vos clients vous aient remis une attestation concernant la destination des travaux. Pouvez-vous joindre les attestations correspondantes ?
+        </p>
+        {attestationsTVA.length > 0 ? (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Libellé</th>
+                  <th>Date</th>
+                  <th>Montant TTC</th>
+                  <th>TVA</th>
+                  <th>Attestation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attestationsTVA.map(a => (
+                  <tr key={a.id}>
+                    <td>{a.libelle}</td>
+                    <td>{a.date}</td>
+                    <td>{fmt(a.montant)}</td>
+                    <td>{a.taux_tva}%</td>
+                    <td>
+                      <div className="upload-zone" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
+                        <Upload size={14} /> Joindre
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Aucune transaction concernée</p>
+        )}
+      </div>
+
+      {/* Q9 — Logiciel de facturation */}
+      <div className="card">
+        <p className="form-label">
+          9. Avec quel logiciel avez-vous émis vos factures ?
+        </p>
+        <input
+          className="form-input"
+          value={logicielFacturation}
+          onChange={e => setLogicielFacturation(e.target.value)}
+          placeholder="Ex: Henrri, Pennylane, Excel..."
+        />
+      </div>
+
+      {/* Q10 — Confirmation CA */}
+      <div className="card">
+        <p className="form-label" style={{ marginBottom: 'var(--space-sm)' }}>
+          10. D'après vos transactions et vos réponses, le chiffre d'affaires de votre exercice est estimé. Confirmez-vous ce montant ?
+        </p>
+        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+          <label className="radio-label">
+            <input type="radio" name="confirm_ca" checked={confirmCA === true} onChange={() => setConfirmCA(true)} />
+            Oui
+          </label>
+          <label className="radio-label">
+            <input type="radio" name="confirm_ca" checked={confirmCA === false} onChange={() => setConfirmCA(false)} />
+            Non
+          </label>
+        </div>
+        {confirmCA === false && (
+          <div className="form-group" style={{ marginTop: 'var(--space-sm)' }}>
+            <label className="form-label">Indiquez le montant estimé et d'où provient l'écart :</label>
+            <textarea
+              className="form-textarea"
+              value={ecartCA}
+              onChange={e => setEcartCA(e.target.value)}
+              placeholder="Montant estimé et explication de l'écart..."
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Q11 — CA UE / hors UE */}
+      <div className="card">
+        <p className="form-label" style={{ marginBottom: 'var(--space-sm)' }}>
+          11. Confirmez-vous le montant de vos ventes en UE et hors UE ?
+        </p>
+        <div className="radio-group" style={{ margin: 'var(--space-sm) 0' }}>
+          <label className="radio-label">
+            <input type="radio" name="confirm_ue" checked={confirmUE === true} onChange={() => setConfirmUE(true)} />
+            Oui
+          </label>
+          <label className="radio-label">
+            <input type="radio" name="confirm_ue" checked={confirmUE === false} onChange={() => setConfirmUE(false)} />
+            Non
+          </label>
+        </div>
+        {confirmUE === false && (
+          <div className="form-group" style={{ marginTop: 'var(--space-sm)' }}>
+            <label className="form-label">Indiquez les montants CA UE et hors UE, et d'où provient l'écart :</label>
+            <textarea
+              className="form-textarea"
+              value={ecartUE}
+              onChange={e => setEcartUE(e.target.value)}
+              placeholder="CA UE: ... / CA hors UE: ... / Explication..."
+            />
+          </div>
+        )}
+        <div className="info-box" style={{ marginTop: 'var(--space-md)' }}>
+          <Info size={18} />
+          <div style={{ fontSize: '0.8rem' }}>
+            <strong>Déclaration Européenne de Services (DES)</strong>
+            <p style={{ marginTop: 4 }}>
+              Si vous facturez des services à des clients en UE, vous devez peut-être remplir une DES auprès des douanes.
+              Les prestations non localisables (conseil, assurance, téléphonie...) doivent être déclarées.
+              Vous facturez HT et votre client s'acquitte de la TVA dans son pays (autoliquidation).
+            </p>
+          </div>
+        </div>
       </div>
 
       {totalPCA > 0 && (

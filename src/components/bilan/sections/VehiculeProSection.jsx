@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, Truck } from 'lucide-react';
-import { api } from '../../../api/client';
+import { api } from '../../../api/mock';
 
 const AVANTAGE_METHODES = [
   { value: 'forfait', label: 'Forfait 8% du coût d\'acquisition' },

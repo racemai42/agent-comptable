@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, Upload } from 'lucide-react';
-import { api } from '../../../api/client';
+import { api } from '../../../api/mock';
 
 const REGIMES_FISCAUX = ['IS', 'IR', 'SAS', 'SARL', 'Autre'];
 

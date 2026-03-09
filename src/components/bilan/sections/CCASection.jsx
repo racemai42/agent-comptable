@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, AlertTriangle, Upload } from 'lucide-react';
-import { api } from '../../../api/client';
+import { api } from '../../../api/mock';
 
 export default function CCASection({ bilan, onClose }) {
   const [associes, setAssocies] = useState([]);

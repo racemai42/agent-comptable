@@ -1,0 +1,36 @@
+﻿Cycle,Bilan liquidation,Condition / commentaire,Impact IS,OD,new_bilan,note
+Introduction,No,,Non,aucune,Conditionnement check,
+Comptes courants d’associés,No,,Non,aucune,Conditionnement check,
+Véhicule perso,Yes,"toujours (même si pas d’iK, informer l’utilisateur comment les renseigner)",,aucune,Conditionnement check,
+Véhicule professionnel,No,Si CI véhicule pro,Oui,Done,Conditionnement check,
+Biens immobiliers,No,Activité Immobilier,,aucune,Conditionnement check,
+Emprunt,No,Si CI emprunt,Oui,Done,Conditionnement check,
+Fournisseurs,No,,Oui,Done,done,"Conditionner le bloquage des cycles "
+Clients,No,,,Done,done,Conditionner le bloquage du cyle
+Placements financiers,No,Au moins 1 transaction catégorisée “Placement financier”,,Done,Conditionnement check,
+Immobilisations,No,A UPDATER: toujours (avant: existence d’immobilisations),,Done,Conditionnement check,
+Salariés,Yes,Si au moins 1 transaction “Salaires nets”,Oui,aucune,Conditionnement check,
+Stock,Yes,"Si transactions “Achat de marchandises"" ou ""Achat de matières premières”
+Commerce > stock de marchandises uniquement
+Artisans > stock de mp, produits en cours, produits finis
+Restaurants > stock de mp",,Done,Conditionnement check,
+Capital social,No,(1er exercice & capital social ≠ solde 101300) OU Nième ex. et transactions en “dépôt de capital”,Non,Non affiché,Conditionnement check,
+Projets en cours,No,,,Done,Conditionnement check,
+Litiges,No,,Non,Done,Conditionnement check,
+AGOA,No,,,aucune,Conditionnement check,
+TNS (Travailleur non salarié),Yes,Si SARL ou EURL,Non,aucune,Conditionnement check,
+Canaux de vente,No,si 1 canal de vente de type ≠ “Un lieu physique”,,aucune,Conditionnement check,
+Exercice précédent,Yes,Si Nième exercice ET que l’AGOA précédente n’a pas été réalisé avec LPPro,Non,aucune,Conditionnement check,
+Déductions fiscales,No,"si au moins 1 transaction ""Formations"" (D81) ou (""Pourboire & dons"" > 50€) (D40)",Oui,aucune,Conditionnement check,
+Garantie décennale,No,"SI BTP ",Non,Done,Conditionnement check,
+Filiales,No,Si Ci filiales,,aucune,Conditionnement check,
+Comptes bancaires,Yes,,Non,aucune,Conditionnement check,
+Caisse,No,si 1 canal de vente de type “Un lieu physique”,,Done,Conditionnement check,
+Local commercial,No,Si HCR ou commerce,,Done,Conditionnement check,
+Franchise,No,"Si HCR ou commerce ET 1 au moins 1 transaction “Redevances franchise, marque, brevet”",,aucune,Conditionnement check,
+Modifications statutaires,Yes,,,aucune,Conditionnement check,
+Véhicule professionnel (liquidation),Yes,,,,,
+"Clients (liquidation) ",Yes,,,,,
+"Fournisseurs (liquidation) ",Yes,,,,,
+Immobilisations (liquidation),Yes,,,,,
+"Placements financiers (liquidation) ",Yes,,,,,

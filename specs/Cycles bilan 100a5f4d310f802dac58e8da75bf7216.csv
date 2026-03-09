@@ -1,0 +1,36 @@
+﻿Cycle,Impact IS,Condition / commentaire,new_bilan,note,OD,Bilan liquidation
+Introduction,Non,,Conditionnement check,,aucune,No
+Comptes bancaires,Non,,Conditionnement check,,aucune,Yes
+Capital social,Non,(1er exercice & capital social ≠ solde 101300) OU Nième ex. et transactions en “dépôt de capital”,Conditionnement check,,Non affiché,No
+Véhicule professionnel,Oui,Si CI véhicule pro,Conditionnement check,,Done,No
+Véhicule professionnel (liquidation),,,,,,Yes
+Véhicule perso,,"toujours (même si pas d’iK, informer l’utilisateur comment les renseigner)",Conditionnement check,,aucune,Yes
+Comptes courants d’associés,Non,,Conditionnement check,,aucune,No
+Emprunt,Oui,Si CI emprunt,Conditionnement check,,Done,No
+Clients,,,done,Conditionner le bloquage du cyle,Done,No
+"Clients (liquidation) ",,,,,,Yes
+Fournisseurs,Oui,,done,"Conditionner le bloquage des cycles ",Done,No
+"Fournisseurs (liquidation) ",,,,,,Yes
+Caisse,,si 1 canal de vente de type “Un lieu physique”,Conditionnement check,,Done,No
+Canaux de vente,,si 1 canal de vente de type ≠ “Un lieu physique”,Conditionnement check,,aucune,No
+Immobilisations,,A UPDATER: toujours (avant: existence d’immobilisations),Conditionnement check,,Done,No
+Immobilisations (liquidation),,,,,,Yes
+Projets en cours,,,Conditionnement check,,Done,No
+Filiales,,Si Ci filiales,Conditionnement check,,aucune,No
+Placements financiers,,Au moins 1 transaction catégorisée “Placement financier”,Conditionnement check,,Done,No
+"Placements financiers (liquidation) ",,,,,,Yes
+TNS (Travailleur non salarié),Non,Si SARL ou EURL,Conditionnement check,,aucune,Yes
+Salariés,Oui,Si au moins 1 transaction “Salaires nets”,Conditionnement check,,aucune,Yes
+Garantie décennale,Non,"SI BTP ",Conditionnement check,,Done,No
+Litiges,Non,,Conditionnement check,,Done,No
+Local commercial,,Si HCR ou commerce,Conditionnement check,,Done,No
+Franchise,,"Si HCR ou commerce ET 1 au moins 1 transaction “Redevances franchise, marque, brevet”",Conditionnement check,,aucune,No
+Stock,,"Si transactions “Achat de marchandises"" ou ""Achat de matières premières”
+Commerce > stock de marchandises uniquement
+Artisans > stock de mp, produits en cours, produits finis
+Restaurants > stock de mp",Conditionnement check,,Done,Yes
+Exercice précédent,Non,Si Nième exercice ET que l’AGOA précédente n’a pas été réalisé avec LPPro,Conditionnement check,,aucune,Yes
+Déductions fiscales,Oui,"si au moins 1 transaction ""Formations"" (D81) ou (""Pourboire & dons"" > 50€) (D40)",Conditionnement check,,aucune,No
+Biens immobiliers,,Activité Immobilier,Conditionnement check,,aucune,No
+Modifications statutaires,,,Conditionnement check,,aucune,Yes
+AGOA,,,Conditionnement check,,aucune,No

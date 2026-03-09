@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, Upload } from 'lucide-react';
-import { api } from '../../../api/mock';
+import { api } from '../../../api/client';
 
 export default function BanquesSection({ bilan, onClose }) {
   const [comptes, setComptes] = useState([]);

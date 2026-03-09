@@ -107,6 +107,16 @@ app.get('/api/companies/:id/litiges', (req, res) => {
   res.json(db.prepare('SELECT * FROM litiges WHERE company_id = ?').all(req.params.id));
 });
 
+// ─── Cut-off fournisseurs ───
+app.get('/api/companies/:id/cutoff-fournisseurs', (req, res) => {
+  res.json(db.prepare('SELECT * FROM cutoff_fournisseurs WHERE company_id = ?').all(req.params.id));
+});
+
+// ─── Cut-off clients ───
+app.get('/api/companies/:id/cutoff-clients', (req, res) => {
+  res.json(db.prepare('SELECT * FROM cutoff_clients WHERE company_id = ?').all(req.params.id));
+});
+
 // ─── Placements ───
 app.get('/api/companies/:id/placements', (req, res) => {
   res.json(db.prepare('SELECT * FROM placements WHERE company_id = ?').all(req.params.id));

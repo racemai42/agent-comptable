@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info } from 'lucide-react';
-import { api } from '../../../api/mock';
+import { api } from '../../../api/client';
 
 const EXERCICE_OPTIONS = [
   { value: 'n', label: 'Exercice N' },

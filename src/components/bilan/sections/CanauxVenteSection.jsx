@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, Upload, ShoppingCart } from 'lucide-react';
-import { api } from '../../../api/mock';
+import { api } from '../../../api/client';
 
 const TYPE_LABELS = {
   'e-commerce': 'E-commerce',

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, Car } from 'lucide-react';
-import { api } from '../../../api/mock';
+import { api } from '../../../api/client';
 
 export default function VehiculePersoSection({ bilan, onClose }) {
   const [vehicules, setVehicules] = useState([]);

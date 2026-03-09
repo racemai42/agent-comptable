@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Info, Upload, Plus, Trash2 } from 'lucide-react';
-import { api } from '../../../api/mock';
+import { api } from '../../../api/client';
 
 const TVA_OPTIONS = ['20%', '10%', '5,5%', '0%'];
 const CATEGORIES_ACHAT = [
